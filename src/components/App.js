@@ -8,7 +8,9 @@ import Question from "./Question";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
-const initialState = { questions: [], status: "loading", index: 0, answer: null, points: 0, highScore: 0 };
+import Footer from "./Footer";
+import Timer from "./Timer";
+const initialState = { questions: [], status: "loading", index: 0, answer: null, points: 0, highScore: 0 ,secondsremaining: 30};
 function reducer(state, action) {
   switch (action.type) {
     case "SET_QUESTIONS":
@@ -16,7 +18,7 @@ function reducer(state, action) {
     case "SET_ERROR":
       return { ...state, status: "error" };
     case "START_QUIZ":
-      return { ...state, status: "active" };
+      return { ...state, status: "active" , secondsremaining: state.questions.length * 30};
     case "SELECT_ANSWER":
       const question = state.questions.at(state.index);
       return {
@@ -29,13 +31,15 @@ function reducer(state, action) {
       return { ...state, status: "finished", highScore: state.points > state.highScore ? state.points : state.highScore };
     case "RESTART":
       return { ...initialState, questions: state.questions, status: "ready" };
+    case "DECREMENT_TIMER":
+      return { ...state, secondsremaining: state.secondsremaining - 1 };
     default:
       throw new Error("Unknown action type");
   }
 }
 export default function App() {
 
-  const [{ questions, status, index, answer, points, highScore }, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status, index, answer, points, highScore, secondsremaining }, dispatch] = useReducer(reducer, initialState);
   var questionsCount = questions.length;
 
   useEffect(function () {
@@ -66,6 +70,9 @@ export default function App() {
         }
         {status === "finished" && <FinishScreen points={points} possiblePoints={possiblePoints} highScore={highScore} dispatch={dispatch} />}
       </Main>
+      <Footer>
+        <Timer secondsremaining={secondsremaining} dispatch={dispatch} />
+      </Footer>
 
     </div>
   );
